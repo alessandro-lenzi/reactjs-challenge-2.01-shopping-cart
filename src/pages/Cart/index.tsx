@@ -1,45 +1,40 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import {
   MdDelete,
   MdAddCircleOutline,
   MdRemoveCircleOutline,
 } from 'react-icons/md';
 
-// import { useCart } from '../../hooks/useCart';
-// import { formatPrice } from '../../util/format';
+import { useCart } from '../../hooks/useCart';
+import { CartProduct } from '../../types';
+import { formatPrice } from '../../util/format';
+
 import { Container, ProductTable, Total } from './styles';
 
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-  amount: number;
-}
-
 const Cart = (): JSX.Element => {
-  // const { cart, removeProduct, updateProductAmount } = useCart();
+  const { cart, removeProduct, updateProductAmount } = useCart();
+  const [cartTotal, setCartTotal] = useState(0);
 
-  // const cartFormatted = cart.map(product => ({
-  //   // TODO
-  // }))
-  // const total =
-  //   formatPrice(
-  //     cart.reduce((sumTotal, product) => {
-  //       // TODO
-  //     }, 0)
-  //   )
+  useEffect(() => {
+    setCartTotal(cart.reduce((acc, item) => acc + item.amount * item.price, 0));
+  }, [cart]);
 
-  function handleProductIncrement(product: Product) {
-    // TODO
+  function handleProductIncrement(product: CartProduct) {
+    updateProductAmount({
+      productId: product.id,
+      amount: product.amount + 1,
+    });
   }
 
-  function handleProductDecrement(product: Product) {
-    // TODO
+  function handleProductDecrement(product: CartProduct) {
+    updateProductAmount({
+      productId: product.id,
+      amount: product.amount - 1,
+    });
   }
 
   function handleRemoveProduct(productId: number) {
-    // TODO
+    removeProduct(productId);
   }
 
   return (
@@ -55,21 +50,22 @@ const Cart = (): JSX.Element => {
           </tr>
         </thead>
         <tbody>
-          <tr data-testid="product">
+          {cart.map(cartItem => (
+          <tr key={cartItem.id} data-testid="product">
             <td>
-              <img src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg" alt="Tênis de Caminhada Leve Confortável" />
+              <img src={cartItem.image} alt={cartItem.title} />
             </td>
             <td>
-              <strong>Tênis de Caminhada Leve Confortável</strong>
-              <span>R$ 179,90</span>
+              <strong>{cartItem.title}</strong>
+              <span>{formatPrice(cartItem.price)}</span>
             </td>
             <td>
               <div>
                 <button
                   type="button"
                   data-testid="decrement-product"
-                // disabled={product.amount <= 1}
-                // onClick={() => handleProductDecrement()}
+                  disabled={cartItem.amount <= 1}
+                  onClick={() => handleProductDecrement(cartItem)}
                 >
                   <MdRemoveCircleOutline size={20} />
                 </button>
@@ -77,30 +73,31 @@ const Cart = (): JSX.Element => {
                   type="text"
                   data-testid="product-amount"
                   readOnly
-                  value={2}
+                  value={cartItem.amount}
                 />
                 <button
                   type="button"
                   data-testid="increment-product"
-                // onClick={() => handleProductIncrement()}
+                  onClick={() => handleProductIncrement(cartItem)}
                 >
                   <MdAddCircleOutline size={20} />
                 </button>
               </div>
             </td>
             <td>
-              <strong>R$ 359,80</strong>
+              <strong>{formatPrice(cartItem.amount * cartItem.price)}</strong>
             </td>
             <td>
               <button
                 type="button"
                 data-testid="remove-product"
-              // onClick={() => handleRemoveProduct(product.id)}
+                onClick={() => handleRemoveProduct(cartItem.id)}
               >
                 <MdDelete size={20} />
               </button>
             </td>
           </tr>
+          ))}
         </tbody>
       </ProductTable>
 
@@ -109,7 +106,7 @@ const Cart = (): JSX.Element => {
 
         <Total>
           <span>TOTAL</span>
-          <strong>R$ 359,80</strong>
+          <strong>{formatPrice(cartTotal)}</strong>
         </Total>
       </footer>
     </Container>
