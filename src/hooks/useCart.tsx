@@ -48,20 +48,24 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const addProduct = async (productId: number) => {
     try {
-      const cartItem = cart.find(item => item.id === productId);
-      const currentAmount = cartItem?.amount || 0;
-
       const response = await api.get<Product>(`/products/${productId}`);
-      if (!response || response.status !== 200) {
+      if (!response || response.status !== 200 || !response.data) {
         throw new Error("Erro na adição do produto");
       }
       const product = response.data;
 
-      await api.get<Stock>(`/stock/${productId}`).then(response => {
-        const stock = response.data;
-        if (stock.amount - currentAmount <= 0) {
-          throw new Error('Quantidade solicitada fora de estoque');
-        }
+      const stockResponse = await api.get<Stock>(`/stock/${productId}`);
+      if (!stockResponse || stockResponse.status !== 200 || !stockResponse.data) {
+        throw new Error("Erro na adição do produto");
+      }
+      const stock = stockResponse.data;
+
+      const cartItem = cart.find(item => item.id === productId);
+      const currentAmount = cartItem?.amount || 0;
+
+      if (stock.amount - currentAmount <= 0) {
+        throw new Error('Quantidade solicitada fora de estoque');
+      } else {
 
         const newCartItem = {
           id: product.id,
@@ -73,11 +77,8 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
         const otherItems = cart.filter(item => item.id !== product.id);
         setCart([newCartItem, ...otherItems].sort(productSorter));
-
-        // toast.success(`Produto adicionado ao carrinho`);
-      }).catch(() => {
-        throw new Error("Erro na adição do produto");
-      });
+      }
+      // toast.success(`Produto adicionado ao carrinho`);
     } catch (exception) {
       toast.error(exception.message);
     }

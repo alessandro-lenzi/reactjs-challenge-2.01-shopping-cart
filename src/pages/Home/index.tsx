@@ -13,7 +13,8 @@ const Home = (): JSX.Element => {
   const { addProduct, cartItemsAmount } = useCart();
 
   useEffect(() => {
-    api.get<Product[]>('/products').then(response => {
+    async function loadProducts() {
+      const response = await api.get<Product[]>('/products');
       const results = response.data.map(product => {
         return {
           ...product,
@@ -21,7 +22,9 @@ const Home = (): JSX.Element => {
         };
       });
       setProducts(results.sort(productSorter));
-    });
+    }
+
+    loadProducts();
   }, []);
 
   function handleAddProduct(product: ProductStock) {
@@ -30,7 +33,7 @@ const Home = (): JSX.Element => {
 
   return (
     <ProductList>
-      {products && products.map(product => (
+      {products.map(product => (
       <li key={product.id}>
         <img src={product.image} alt={product.title} />
         <strong>{product.title}</strong>
