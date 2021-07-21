@@ -3,14 +3,26 @@ import { MdAddShoppingCart } from 'react-icons/md';
 import { ProductList } from './styles';
 import { useCart } from '../../hooks/useCart';
 import { Product, ProductStock } from '../../types';
-import { productSorter } from '../../util/productSorter';
 import { formatPrice } from '../../util/format';
 import { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 
+interface CartItemsAmount {
+  [key: number]: number;
+}
+
 const Home = (): JSX.Element => {
   const [products, setProducts] = useState<ProductStock[]>([]);
-  const { addProduct, cartItemsAmount } = useCart();
+  const { addProduct, cart } = useCart();
+  const [cartItemsAmount, setCartItemsAmount] = useState<CartItemsAmount>({});
+
+  useEffect(() => {
+    const amounts = products.reduce((acc, product) => {
+      acc[product.id] = cart.find(cartItem => cartItem.id === product.id)?.amount || 0;
+      return acc;
+    }, {} as CartItemsAmount);
+    setCartItemsAmount(amounts);
+  }, [products, cart]);
 
   useEffect(() => {
     async function loadProducts() {
@@ -21,7 +33,7 @@ const Home = (): JSX.Element => {
           priceFormatted: formatPrice(product.price),
         };
       });
-      setProducts(results.sort(productSorter));
+      setProducts(results); //.sort(productSorter));
     }
 
     loadProducts();
@@ -31,7 +43,7 @@ const Home = (): JSX.Element => {
     addProduct(product.id);
   }
 
-  return (
+  return products && cart && (
     <ProductList>
       {products.map(product => (
       <li key={product.id}>
@@ -45,7 +57,7 @@ const Home = (): JSX.Element => {
         >
           <div data-testid="cart-product-quantity">
             <MdAddShoppingCart size={16} color="#FFF" />
-            {cartItemsAmount ? cartItemsAmount[product.id] || 0 : 0}
+            {cartItemsAmount[product.id] || 0}
           </div>
 
           <span>ADICIONAR AO CARRINHO</span>

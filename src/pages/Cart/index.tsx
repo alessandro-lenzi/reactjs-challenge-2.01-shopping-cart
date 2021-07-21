@@ -37,7 +37,7 @@ const Cart = (): JSX.Element => {
     removeProduct(productId);
   }
 
-  return (
+  return cart && (
     <Container>
       <ProductTable>
         <thead>
