@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   MdDelete,
   MdAddCircleOutline,
@@ -13,11 +12,8 @@ import { Container, ProductTable, Total } from './styles';
 
 const Cart = (): JSX.Element => {
   const { cart, removeProduct, updateProductAmount } = useCart();
-  const [cartTotal, setCartTotal] = useState(0);
 
-  useEffect(() => {
-    setCartTotal(cart.reduce((acc, item) => acc + item.amount * item.price, 0));
-  }, [cart]);
+  const cartTotal = cart.reduce((acc, item) => acc + item.amount * item.price, 0);
 
   function handleProductIncrement(product: CartProduct) {
     updateProductAmount({
