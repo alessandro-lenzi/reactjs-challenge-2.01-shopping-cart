@@ -14,15 +14,11 @@ interface CartItemsAmount {
 const Home = (): JSX.Element => {
   const [products, setProducts] = useState<ProductStock[]>([]);
   const { addProduct, cart } = useCart();
-  // const [cartItemsAmount, setCartItemsAmount] = useState<CartItemsAmount>({});
 
-  // useEffect(() => {
-    const cartItemsAmount = products.reduce((acc, product) => {
-      acc[product.id] = cart.find(cartItem => cartItem.id === product.id)?.amount || 0;
-      return acc;
-    }, {} as CartItemsAmount);
-    // setCartItemsAmount(amounts);
-  // }, [products, cart]);
+  const cartItemsAmount = products.reduce((acc, product) => {
+    acc[product.id] = cart.find(cartItem => cartItem.id === product.id)?.amount || 0;
+    return acc;
+  }, {} as CartItemsAmount);
 
   useEffect(() => {
     async function loadProducts() {
